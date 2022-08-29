@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- 页面meta -->
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>任务表</title>
+		<meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="../plugins/elementui/index.css">
+		<link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+			<link rel="stylesheet" href="../css/index.css" />
+		<link rel="stylesheet" href="../css/style.css">
+	
+	</head>
+	<body class="hold-transition">
+		<div id="app">
+			<div class="content-header">
+				<h1>{{tableInfo.asname}}</h1>
+				<span>创建于：{{tableInfo.newtime}}</span>
+				<span>描述：{{tableInfo.description}}</span>
+			</div>
+			<div class="app-container">
+				<div class="box">
+					</div>
+					<div class="add-form">
+						<!--写入表格-->
+						<el-form class="dataAddForm" ref="dataAddForm"  label-position="top" :rules="rules"
+								 label-width="80px">
+
+							<el-row v-for="(ts,key) in dataInfo" :key="key">
+								<el-col :span="12">
+									<el-form-item :label="ts.index+'、'+ts.rowasname+'： '" :rules="rules">
+										<div v-if="ts.type==3">
+											<el-date-picker type="datetime"  placeholder="选择日期" v-model="ts.content" style="width: 100%;"></el-date-picker>
+										</div>
+										<div v-else-if="ts.type==4">
+											<el-radio-group v-model="ts.content">
+												<el-radio  label="男">男</el-radio>
+												<el-radio  label="女">女</el-radio>
+											</el-radio-group>
+										</div>
+										<div v-else>
+											<el-input v-model="ts.content" v-bind:placeholder="ts.type | typetxt" @input="checkType(ts.content,ts.type,ts)" prop="typ1"></el-input>
+										</div>
+
+									</el-form-item>
+								</el-col>
+							</el-row>
+						</el-form>
+							<div slot="footer" class="dialog-footer">
+								<el-button @click="dialogFormVisible4Edit = false">取消</el-button>
+								<el-button type="primary" @click="handleAdd()">确定</el-button>
+							</div>
+					</div>
+			</div>
+
+		</div>
+
+	</body> <!-- 引入组件库 -->
+	<script src="../js/vue.js"></script>
+	<script src="../plugins/elementui/index.js"></script>
+	<script type="text/javascript" src="../js/jquery.min.js"></script>
+	<script src="../js/axios-0.18.0.js"></script>
+	<script>
+
+
+		function fn(type){
+			if(type=="1")
+				return "默认"
+			else if(type=="2")
+				return "数字"
+			else if(type=="3")
+				return "时间"
+			else if(type=="4")
+				return "性别"
+			else if(type=="5")
+				return "电话"
+			else if(type=="6")
+				return "地址"
+		}
+		Vue.filter("typetxt",function(val){
+			return fn(val);
+		})
+
+		var vue = new Vue({
+
+			el: '#app',
+
+			data: {
+				options:[
+					{value:1,text:"默认"},
+					{value:2,text:"数字"},
+					{value:3,text:"时间"},
+					{value:4,text:"性别"},
+					{value:5,text:"电话"},
+					{value:6,text:"地址"}
+				],
+				TableID:[1],
+				sendAddData:{},
+				tableInfo:[],
+				dataInfo:[],
+				dataList: [], //当前页要展示的列表数据
+				formData: {}, //表单数据
+				dialogFormVisible: false, //控制表单是否可见
+				dialogFormVisible4Edit: false, //编辑表单是否可见
+				rules: { //校验规则
+					typ1: [{
+						required: true,
+						message: '图书类别为必填项',
+						trigger: 'blur'
+					}],
+					2: [{
+						required: true,
+						message: '图书名称为必填项',
+						trigger: 'blur'
+					}]
+				},
+
+			},
+			computed: {
+
+			},
+
+			//钩子函数，VUE对象初始化完成后自动执行
+			created() {
+				this.getByIdAll(1);
+			},
+			methods: {
+
+				//列表
+				getByIdAll(i) {
+					//发送ajax请求
+					 this.TableID = window.location.href.split("=")[1];
+
+					axios.get("/mytables/"+this.TableID).then((res) => {
+						this.dataInfo = res.data.dataInfo;
+						this.tableInfo = res.data.data;
+						this.dataList = res.data.data2;
+
+						if (i===1){
+						for (let i = 0; i < this.dataInfo.length; i++) {
+							this.dataInfo[i].index=1+i;
+							for (let j = 0; j < this.options.length; j++) {
+								if (this.dataInfo[i].type==this.options[j]["value"])
+										this.dataInfo[i].typetext= this.options[j]["text"]
+							}
+
+
+						}
+							console.log(this.dataInfo)
+						}
+					});
+
+				},
+				checkType(e,type,ts) {
+					if (type==2){
+					this.$nextTick(() => {
+						ts.content=e.replace(/[^\d]/g,'');
+					})
+					}
+					if (type==5){
+						this.$nextTick(() => {
+							ts.content=e.replace(/^[1][3,4,5,7,8][0-9]{9}$/,"");
+						})
+					}
+
+				},
+				 timeTrans(time, type){
+					let date = new Date(new Date(time).getTime() + 8 * 3600 * 1000)
+					date = date.toJSON();
+					if (type===1){
+						date = date.substring(0, 10)
+					}
+					else {
+						date = date.substring(0, 19).replace('T', ' ')
+					}
+					return date
+				},
+				isNum(e,v){
+					let val = e.replace(/(^\s*)|(\s*$)/g, "")
+					var reg = /[^\d.]/g
+					// 只能是数字和小数点，不能是其他输入
+					val = val.replace(reg, "")
+					// // 保证第一位只能是数字，不能是点
+					val = val.replace(/^\./g, "");
+					// // 小数只能出现1位
+					val = val.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+					// // 小数点后面保留2位
+					val = val.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3');
+					console.log(val);
+					this.$nextTick(() => {
+						v=val
+					})
+				},
+				defaultText(i){
+					return  this.options[i-1]["text"]
+				},
+				getByName(name) {
+					axios.get("/books/name/" + name).then((res) => {
+						this.dataList = res.data.data;
+					})
+				},
+				downloadFile(){
+					setTimeout("location.href='/tables/child/download'", 1000);
+				},
+				//添加
+				handleAdd() {
+					for (let i = 0; i < this.dataInfo.length; i++) {
+						if (this.dataInfo[i].type==3){
+							this.dataInfo[i].content=this.timeTrans(this.dataInfo[i].content,2 	)
+						}
+					}
+					this.sendAddData.dataInfo= this.dataInfo;
+					this.sendAddData.tableInfo= [{id:this.tableInfo.id,uid:this.tableInfo.userid}];
+					console.log(this.sendAddData)
+					axios.post("/mytables/child",this.sendAddData).then((res) => {
+						if (res.data.code == 20011) {
+							this.dialogFormVisible = false
+							this.$message.success("添加成功！");
+						} else if (res.data.code == 20010) {
+
+							this.$message.error("添加失败！");
+
+						} else {
+							this.$message.error(res.data.msg);
+						}
+
+					}).finally(() => {
+						console.log(this.TableID)
+						location.href='/pages/TaskTable.html?id='+this.TableID;
+					})
+				},
+
+				// 删除
+				handleDelete(row) {
+					this.$confirm("你确定要删除吗", "提示", {
+						type: "info"
+					}).then(() => {
+						axios.delete("/books/" + row.id).then((res) => {
+							if (res.data.code == 20021) {
+								this.$message.error("删除成功！");
+							} else
+								this.$message.error("删除失败！");
+
+						}).finally(() => {
+							this.getAll();
+						})
+					}).catch(() => {
+						this.$message.info("取消删除操作");
+					});
+				}
+			}
+		});
+	</script>
+
+</html>
