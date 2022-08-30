@@ -29,7 +29,7 @@
             </el-col>
           </el-row>
           <div class="el-form-item_setbutton">
-            {{ tableInfo }}
+ 
             <el-row v-for="(item,index) in tableInfo.tableData" class="li_block" :key="index">
               <el-col :span="24">
                 <el-form-item :label="'第'+(index+1)+'列:'" :prop="'tableData.'+index+'.rowAsName'" :rules="rules.check">
@@ -137,37 +137,18 @@ export default {
     //创建表格到数据库
     const handleCreateTable = () => {
       let date = new Date();
-
       data.tableInfo.newtime = date;
-
-      // for (let k in data.tableData) {
-      //   data.rowAsNames.push(data.tableData[k].rowAsName);
-      //   data.rowNames.push(data.tableData[k].row_name);
-      //   data.rowType.push(data.tableData[k].type);
-      //   data.isnull.push(data.tableData[k].isnull);
-      // }
       data.tableInfo.userid = 1;
-      // data.tableInfo.rowasname = data.rowAsNames;
-      // data.tableInfo.row_name = data.rowNames;
-      // data.tableInfo.type = data.rowType;
-      // data.tableInfo.isnull = data.isnull;
-
       const tabledbname=pinyin(data.tableInfo.asname, { toneType: 'none' }).replace(/\s+/g,"").replace(/[^a-zA-Z]/g,'').substring(0,8)
-
-      data.tableInfo.table_name = tabledbname+"_" + date.getFullYear() + "0" + (date.getMonth()+1) + "" + date.getDate()+'_'+Math.floor(Math.random() * (100 - 1 + 1)) + 1;;
-      console.log( data.tableInfo)
+      data.tableInfo.table_name = tabledbname+"_" + date.getFullYear() + "0" + (date.getMonth()+1) + "" + date.getDate()+'_'+Math.floor(Math.random() * (100 - 1 + 1)) + 1
       createTableApi(data.tableInfo).then((res) => {
-
-
         if (res.code == 20011) {
           ElMessage.success("创建成功！");
           router.push('/task')
         } else if (res.code == 20010) {
           ElMessage.error("创建失败！");
-
         } else {
           ElMessage.error(res.data.msg);
-
         }
       })
 

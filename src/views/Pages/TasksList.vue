@@ -131,7 +131,7 @@ export default {
     }
     const getAll = () => {
       getTaskListApi(data.searchParams).then(res => {
-        console.log(res)
+      
         data.dataList = res.data.userTables
 
         for (const r in data.dataList) {
@@ -142,14 +142,13 @@ export default {
           if (resKey === "id" || resKey === "asname" || resKey === "newtime") data.dataHeader.propname.push(resKey)
         }
         data.total = res.data.total
-        console.log(data.dataList)
+         document.title="后台管理页面"
       })
     }
     getAll()
     const handleUpdate = row => {
       taskFindById(row.id).then(res => {
         data.formData = res.data
-        console.log(res)
         data.formData.newtime = disposeTime(data.formData.newtime)
         data.dialogFormVisible4Edit = true
       })
@@ -158,7 +157,6 @@ export default {
       ElMessageBox.confirm("此操作将会删除该任务表，谨慎操作！", "警告", { confirmButtonText: "确认", cancelButtonText: "取消", type: "warning" })
         .then(() => {
           DeleteAndDropTaskTableById(row.id).then(res => {
-            console.log(res)
             getAll()
           })
         })

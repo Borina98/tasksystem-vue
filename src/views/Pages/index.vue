@@ -8,7 +8,7 @@
   </div>
 </template>
 
-<script>
+<script >
 import { reactive, toRefs, computed, ref } from "vue"
 import { userAddApi, UserChangeByIdApi } from "@/util/request"
 import BlForm from "@/components/bl-form.vue"
@@ -18,8 +18,7 @@ export default {
     const el_userForm = ref()
     const validate = (rule, content, callback) => {
       const t = rule.field
-      // let n = t.substr(t.indexOf(".") + 1, t.length)
-      // n = n.substr(0, n.lastIndexOf("."))
+
 
       const userReg = /^[a-zA-Z0-9_-]{4,16}$/
       const pwd = /(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).{6,10}/
